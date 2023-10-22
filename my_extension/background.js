@@ -5,5 +5,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             files: ['content.js']
         });
     }
+
+    
 });
 
