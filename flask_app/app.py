@@ -3,7 +3,7 @@ from flask_cors import CORS
 from classification_module import ClassificationSystem
 
 app = Flask(__name__)
-cors = CORS(app)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 model = ClassificationSystem()
 

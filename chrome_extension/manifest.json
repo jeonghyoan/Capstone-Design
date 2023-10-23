@@ -13,5 +13,9 @@
   },
   "background": {
     "service_worker": "./background.js"
-  }
+  },
+  "host_permissions": [
+    "https://extension.ninja/*",
+    "http://127.0.0.1:5000/"
+  ]
 }
