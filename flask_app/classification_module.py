@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[25]:
+# In[37]:
 
 
 import urllib.request
@@ -30,7 +30,7 @@ import requests
 import sys
 
 class ClassificationSystem:
-    def __init__(self, contents = None, threshold = 0.5, savedModelPath = None, excludeWordList = None, keyWordList = None, lastNum = 10):
+    def __init__(self, contents = None, threshold = 0.5, savedModelPath = None, excludeWordList = None, keyWordList = None, lastNum = 5):
         self.contents = contents
         self.threshold = threshold
         self.savedModelPath = savedModelPath
@@ -77,98 +77,87 @@ class ClassificationSystem:
         
     #실제 분류 코드 : 이 메소드만 호출하면 됨
     def Classification(self, link):
-        while True:
-            print('----------------------Step 1 : Text Classification----------------------')
-            try:
-                lastSentences = self.GetLastSentence(link)
-                if lastSentences != 'Closed page':
-                    print('System : Valid page - Text Classification start')
-                    textClassificationResult = self.TextClassification(lastSentences)
-                    if textClassificationResult == 1:
-                        print('System : Ad detected in text')
-                        return 1
-                    else:
-                        print('System : Ad did not detected - OCR start')
-                        print('----------------------Step 2 : OCR----------------------')
-                        ocrSentences = self.OCR(link)
-                        if ocrSentences == 'Closed page':
-                            print('System : Page is not available for OCR now')
-                            return -1
-                        ocrClassificationResult = self.TextClassification(ocrSentences)
-                        if ocrClassificationResult == 1:
-                            print('System : Ad detected in image')
-                            return 1
-                        else:
-                            print('System : Ad did not detected in image - text analysis start')
-                            print('----------------------Step 3 : text analysis----------------------')
-                            textAnalysisResult = self.TextAnalysis(self.contents)
-                            if textAnalysisResult == 1:
-                                print('System : Ad detected in text analysis')
-                                return 1
-                            else :
-                                print('System : Ad did not detected at all')
-                                return 0
-                else:#접근할 수 없는 페이지였을때 ex 구버전 or 삭제된 페이지
-                    print('System : Cannot access to the page')
+        print('----------------------Step 1 : Text Classification----------------------')
+        lastSentences = self.GetLastSentence(link)
+        if lastSentences != 'Closed page':
+            print('System : Valid page - Text Classification start')
+            textClassificationResult = self.TextClassification(lastSentences)
+            if textClassificationResult == 1:
+                print('System : Ad detected in text')
+                return 1
+            else:
+                print('System : Ad did not detected - OCR start')
+                print('----------------------Step 2 : OCR----------------------')
+                ocrSentences = self.OCR(link)
+                if ocrSentences == 'Closed page':
+                    print('System : Page is not available for OCR now')
                     return -1
-            except WebDriverException:
-                print('System : Link unavailable temporarily : retry in 3 seconds')
-                time.sleep(3)
+                ocrClassificationResult = self.TextClassification(ocrSentences)
+                if ocrClassificationResult == 1:
+                    print('System : Ad detected in image')
+                    return 1
+                else:
+                    #print('System : text analysis temporarily blocked')
+                    #return 0
+                    print('System : Ad did not detected in image - text analysis start')
+                    print('----------------------Step 3 : text analysis----------------------')
+                    textAnalysisResult = self.TextAnalysis(self.contents)
+                    if textAnalysisResult == 1:
+                        print('System : Ad detected in text analysis')
+                        return 1
+                    else :
+                        print('System : Ad did not detected at all')
+                        return 0
+        else:#접근할 수 없는 페이지였을때 ex 구버전 or 삭제된 페이지
+            print('System : Cannot access to the page')
+            return -1
         
     
     def GetLastSentence(self, link):
-        #웹드라이버 설정
-        options = webdriver.ChromeOptions()
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option("useAutomationExtension", False)
+        response = requests.get(link)
         
-        client_id = "dEHbLikkg1UHv7x1qKPw" # 발급받은 id 입력
-        client_secret = "ok2VRdqWEE" # 발급받은 secret 입력 
-        
-        driver = webdriver.Chrome(executable_path='./chromedriver-win64/chromedriver.exe', options=options)
-        driver.implicitly_wait(1)
-        try:
-            #블로그 링크 접근
-            driver.get(link)
-            time.sleep(0.5)
-            #블로그 안 본문이 있는 iframe에 접근하기
-            driver.switch_to.frame("mainFrame")
-            html = driver.page_source
-            soup = bs(html, 'html.parser')
-
-            lastSentences = ['None'] * self.lastNum
+        if response.status_code == 200:
             try:
-                mainContainerContents = driver.find_element(By.CSS_SELECTOR,'div.se-main-container').text
-                #텍스트 이진분류용으로 전체 내용 저장
-                self.contents = mainContainerContents
-                #문장단위로 분리
-                sentences = re.split(r'[.?!]\s|\n', mainContainerContents)
-                sentences = self.DealWithHashtag(sentences)
+                soup = bs(response.text, 'html.parser')
+                src = 'https://blog.naver.com/' + soup.iframe['src']
 
-                for num in range(self.lastNum):
-                    try:
-                        self.MoveForward(lastSentences, sentences[-1-num])
-                    except IndexError:
-                        break
-            except NoSuchElementException:
-                print('Old-Version')
+                response2 = requests.get(src)
+                if response2.status_code == 200:
+                    soup2 = bs(response2.text, 'html.parser')
+                    main = soup2.find("div", attrs={'class':'se-main-container'}).text
+            except TypeError:
                 return 'Closed page'
-
-            for idx in range(len(lastSentences)):
-                lastSentences[idx] = self.RemoveTrash(lastSentences[idx])
-
-            #------------------------------------------------------------------------------------
-            #실험용 나중에 지울것
-
-            print('lastSentences:')
-            for e in lastSentences:
-                print(e)
-            #------------------------------------------------------------------------------------
-
-            return lastSentences
-        except UnexpectedAlertPresentException:
-            print('Closed page')
+        else:
             return 'Closed page'
+        
+        main = main.replace('\u200b', '')
+        main = re.sub('\n+', '\n', main)
+        main = main.replace('\n \n', '\n')
+        main = main.strip()
+        self.contents = main
+        sentences = re.split(r'[.?!]\s|\n', main)
+        sentences = self.DealWithHashtag(sentences)
+        
+        lastSentences = ['None'] * self.lastNum
+        
+        for num in range(self.lastNum):
+            try:
+                self.MoveForward(lastSentences, sentences[-1-num])
+            except IndexError: #문단이 lastNum개 이하일 경우
+                break               
+
+        for idx in range(len(lastSentences)):
+            lastSentences[idx] = self.RemoveTrash(lastSentences[idx])
+
+        #------------------------------------------------------------------------------------
+        #실험용 나중에 지울것
+
+        print('lastSentences:')
+        for idx in range(len(lastSentences)):
+            print(lastSentences[idx])
+        #------------------------------------------------------------------------------------
+
+        return lastSentences
         
     #Last Sentence 내에 해시태그들을 단일 요소로 합치는 메소드
     def DealWithHashtag(self, arr):
@@ -273,61 +262,51 @@ class ClassificationSystem:
             return 'Closed page'
     
     def GetImageSource(self, link):
-        #웹드라이버 설정
-        options = webdriver.ChromeOptions()
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option("useAutomationExtension", False)
-        
-        driver = webdriver.Chrome(executable_path='./chromedriver-win64/chromedriver.exe', options=options)
-        driver.implicitly_wait(1)
-        
-        driver.get(link)
-        time.sleep(1)
-        p = 0
-        #본문 내용 크롤링하기
-        try:
-            #블로그 안 본문이 있는 iframe에 접근하기
-            driver.switch_to.frame("mainFrame")
-            html = driver.page_source
-            soup = bs(html, 'html.parser')
-            main_container = soup.select_one('div.se-main-container')
-            stickers = main_container.select('[class*=image]')
-            img_stickers = [sticker for sticker in stickers if sticker.name in ['img', 'video']]
-            
+        response = requests.get(link)
+    
+        if response.status_code == 200:
+            soup = bs(response.text, 'html.parser')
+            src = 'https://blog.naver.com/' + soup.iframe['src']
 
-            if len(img_stickers) == 0:
+            response2 = requests.get(src)
+            if response2.status_code == 200:
+                soup2 = bs(response2.text, 'html.parser')
+        else:
+            return 'Closed page'
+        
+        
+
+        main = soup2.select_one('div.se-main-container')
+        stickers = main.select('[class*=image]')
+        img_stickers = [sticker for sticker in stickers if sticker.name in ['img', 'video']]
+            
+        sticker_sources = ['None'] * self.lastNum
+        
+        if len(img_stickers) == 0:
                 print('No sticker')
-            else:
-                sticker_sources = ['None'] * self.lastNum
-                for sticker in img_stickers:
-                    string = str(sticker)
-                    pattern = re.compile('"https://(.+?)"')
+        else:
+            for sticker in img_stickers:
+                string = str(sticker)
+                pattern = re.compile('"https://(.+?)"')
+                match = pattern.search(string)
+                if match:
+                    src = match.group(1)
+                else:
+                    pattern = re.compile('"http://(.+?)"')
                     match = pattern.search(string)
                     if match:
                         src = match.group(1)
                     else:
-                        pattern = re.compile('"http://(.+?)"')
-                        match = pattern.search(string)
-                        if match:
-                            src = match.group(1)
-                        else:
-                            print('Cannot find img source')
+                        print('Cannot find img source')
 
-                    if 'ssl.pstatic.net' in src:
-                        continue
-                    if 'static.map' in src:
-                        continue
-                    src = 'https://' + src
-                    self.MoveForward(sticker_sources, src)
-                    
-                return sticker_sources
-                
-        except AttributeError:
-            print('The page is not available now. Please retry it later')
-            return 'Closed page'
-        #TextClassification 메소드에서 이미 걸러지기때문에 사실 쓰이지는 않음
-        except NoSuchElementException:
-            print('Closed page')
+                if 'ssl.pstatic.net' in src:
+                    continue
+                if 'static.map' in src:
+                    continue
+                src = 'https://' + src
+                self.MoveForward(sticker_sources, src)
+
+        return sticker_sources
     
     #네이버 API를 통한 OCR
     def OCRAPI(self, image_file):
@@ -384,4 +363,7 @@ class ClassificationSystem:
             return 1
         else:
             return 0
+
+
+
 

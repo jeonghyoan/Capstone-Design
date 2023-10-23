@@ -1,15 +1,25 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
+from flask_cors import CORS
 from classification_module import ClassificationSystem
 
 app = Flask(__name__)
-classifier = ClassificationSystem()
+cors = CORS(app)
+
+model = ClassificationSystem()
 
 @app.route('/classify', methods=['POST'])
 def classify():
     data = request.get_json()
-    url = data['url']
-    result = classifier.Classification(url)
-    return jsonify({'result': result})
+    link = data['link']
+
+    if not link.startswith("https://blog.naver.com"):
+        return {'result': -1}
+
+    classification_result = model.Classification(link)
+
+    return {'result': classification_result}
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='127.0.0.1', port=5000, debug=True)
+
+
