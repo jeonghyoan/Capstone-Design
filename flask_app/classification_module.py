@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[25]:
 
 
 import urllib.request
@@ -16,6 +16,8 @@ from bs4 import BeautifulSoup as bs
 import platform
 from PIL import ImageFont, ImageDraw, Image
 from matplotlib import pyplot as plt
+import tensorflow as tf
+import tensorflow_text
 import re
 import time
 import pandas as pd
@@ -28,7 +30,10 @@ import requests
 import sys
 
 class ClassificationSystem:
-    def __init__(self, excludeWordList = None, keyWordList = None, lastNum = 10):
+    def __init__(self, contents = None, threshold = 0.5, savedModelPath = None, excludeWordList = None, keyWordList = None, lastNum = 10):
+        self.contents = contents
+        self.threshold = threshold
+        self.savedModelPath = savedModelPath
         self.keyWordList = keyWordList
         self.excludeWordList = excludeWordList
         self.lastNum = lastNum
@@ -39,6 +44,7 @@ class ClassificationSystem:
         keyWordData = pd.read_csv('./키워드&업체명_최종.csv')
         self.keyWordList = keyWordData['키워드'].tolist()
         self.excludeWordList = ["받지않고","100%내돈내산", "#체험단", "제공합", "체험할수", "제공하겠", "경험하니", "제공하기도", "뷰티블로거", "제공해드리며", "직접구매"]
+        self.savedModelPath = './BlogPostClassifier'
         
     def RemoveTrash(self, text):
         result = re.sub(r'[,. ]', '', text)
@@ -93,9 +99,15 @@ class ClassificationSystem:
                             print('System : Ad detected in image')
                             return 1
                         else:
-                            print('System : Ad did not detected')
-                            return 0
-                            #self.TextAnalysis()
+                            print('System : Ad did not detected in image - text analysis start')
+                            print('----------------------Step 3 : text analysis----------------------')
+                            textAnalysisResult = self.TextAnalysis(self.contents)
+                            if textAnalysisResult == 1:
+                                print('System : Ad detected in text analysis')
+                                return 1
+                            else :
+                                print('System : Ad did not detected at all')
+                                return 0
                 else:#접근할 수 없는 페이지였을때 ex 구버전 or 삭제된 페이지
                     print('System : Cannot access to the page')
                     return -1
@@ -113,7 +125,7 @@ class ClassificationSystem:
         client_id = "dEHbLikkg1UHv7x1qKPw" # 발급받은 id 입력
         client_secret = "ok2VRdqWEE" # 발급받은 secret 입력 
         
-        driver = webdriver.Chrome()
+        driver = webdriver.Chrome(executable_path='./chromedriver-win64/chromedriver.exe', options=options)
         driver.implicitly_wait(1)
         try:
             #블로그 링크 접근
@@ -127,6 +139,8 @@ class ClassificationSystem:
             lastSentences = ['None'] * self.lastNum
             try:
                 mainContainerContents = driver.find_element(By.CSS_SELECTOR,'div.se-main-container').text
+                #텍스트 이진분류용으로 전체 내용 저장
+                self.contents = mainContainerContents
                 #문장단위로 분리
                 sentences = re.split(r'[.?!]\s|\n', mainContainerContents)
                 sentences = self.DealWithHashtag(sentences)
@@ -264,7 +278,7 @@ class ClassificationSystem:
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
         
-        driver = webdriver.Chrome()
+        driver = webdriver.Chrome(executable_path='./chromedriver-win64/chromedriver.exe', options=options)
         driver.implicitly_wait(1)
         
         driver.get(link)
@@ -360,6 +374,14 @@ class ClassificationSystem:
         else:
             return 'gif'
     
-    def TextAnalysis(self):
-        #텍스트 분석 모델 ex)BERT-OCCSVM 연결하면 됨
-        print('Need TextAnalysis')
+    def TextAnalysis(self, input):
+        print('System : Text Analysis start')
+        print(self.savedModelPath)
+        reloadedModel = tf.saved_model.load(self.savedModelPath)
+        analysisResult = tf.sigmoid(reloadedModel(tf.constant([input])))
+        print(analysisResult)
+        if analysisResult >= 0.5:
+            return 1
+        else:
+            return 0
+
