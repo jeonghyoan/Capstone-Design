@@ -13,7 +13,7 @@ def classify():
     link = data['link']
 
     if not (link.startswith("https://blog.naver.com") or link.startswith("https://m.blog.naver.com")):
-        return {'result': -1}
+        return {'result': 2}
 
     classification_result = model.Classification(link)
 
