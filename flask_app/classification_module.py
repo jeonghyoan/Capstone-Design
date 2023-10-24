@@ -30,21 +30,23 @@ import requests
 import sys
 
 class ClassificationSystem:
-    def __init__(self, contents = None, threshold = 0.5, savedModelPath = None, excludeWordList = None, keyWordList = None, lastNum = 5):
+    def __init__(self, reloadedModel, contents = None, threshold = 0.5, savedModelPath = None, excludeWordList = None, keyWordList = None, lastNum = 5):
+        self.reloadedModel = reloadedModel
         self.contents = contents
         self.threshold = threshold
         self.savedModelPath = savedModelPath
         self.keyWordList = keyWordList
         self.excludeWordList = excludeWordList
         self.lastNum = lastNum
-        # 생성시 한번 반드시 LoadKeyWords 실행
-        self.LoadKeyWord()
+        # 생성시 한번 반드시 실행
+        self.Setting()
         
-    def LoadKeyWord(self):
+    def Setting(self):
         keyWordData = pd.read_csv('./키워드&업체명_최종.csv')
         self.keyWordList = keyWordData['키워드'].tolist()
         self.excludeWordList = ["받지않고","100%내돈내산", "#체험단", "제공합", "체험할수", "제공하겠", "경험하니", "제공하기도", "뷰티블로거", "제공해드리며", "직접구매"]
         self.savedModelPath = './BlogPostClassifier'
+        self.reloadedModel = tf.saved_model.load(self.savedModelPath)
         
     def RemoveTrash(self, text):
         result = re.sub(r'[,. ]', '', text)
@@ -356,14 +358,9 @@ class ClassificationSystem:
     def TextAnalysis(self, input):
         print('System : Text Analysis start')
         print(self.savedModelPath)
-        reloadedModel = tf.saved_model.load(self.savedModelPath)
-        analysisResult = tf.sigmoid(reloadedModel(tf.constant([input])))
+        analysisResult = tf.sigmoid(self.reloadedModel(tf.constant([input])))
         print(analysisResult)
         if analysisResult >= 0.5:
             return 1
         else:
             return 0
-
-
-
-
