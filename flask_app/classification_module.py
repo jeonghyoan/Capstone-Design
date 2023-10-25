@@ -29,6 +29,7 @@ import cv2
 import requests
 import sys
 
+
 class ClassificationSystem:
     def __init__(self, reloadedModel = None, contents = None, threshold = 0.5, savedModelPath = None, excludeWordList = None, keyWordList = None, lastNum = 5):
         self.reloadedModel = reloadedModel
