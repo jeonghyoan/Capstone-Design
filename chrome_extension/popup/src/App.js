@@ -1,0 +1,157 @@
+/* global chrome */
+import React, {useEffect, useState} from 'react';
+import styled from 'styled-components';
+import ClipLoader from 'react-spinners/ClipLoader';
+import {BsEmojiExpressionlessFill,BsFillEmojiLaughingFill, BsEmojiFrownFill, BsEmojiDizzyFill} from 'react-icons/bs'
+
+function App() {
+  const [loading, setLoading] = useState(true);
+  const [Result, setResult] = useState("");
+
+  useEffect(()=>{
+    // const fetchData = async () => {
+    //   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    //   const tab = tabs[0];
+    //   let data = {link: tab.url }
+    //   try{
+    //   const response = await api.post('/classify', data);
+    //   let result = response.data.result;
+     
+    //       if (result == -1) {
+    //           setResultText('유효하지 않은 페이지');
+    //       } else if (result == 0) {
+    //           setResultText('이 거친세상속 믿을만한리뷰ㅠ');
+    //       } else if (result == 1) {
+    //           setResultText('광곤데 믿었니?ㅋ');
+    //       } else if (result == 2) {
+    //           setResultText('좀 의심됨');
+    //       }
+    //   }catch(error){
+    //     console.error("Error checking the email", error)
+    //   }
+
+    //  });
+      
+    // }
+
+    // fetchData();
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      var tab = tabs[0]; // 현재 활성화된 탭을 가져옵니다.
+      fetch('http://127.0.0.1:5000/classify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ link: tab.url }),
+      })
+      .then(response => response.json())
+      .then(data => {
+          let result = data.result;
+          console.log(result);
+          setResult(result);
+          setLoading(false);
+      })
+      .catch(console.error);
+  });
+ 
+  },[])
+
+  const renderResult = () => {
+    if (Result === -1) {
+        return (
+        <ContentLayout>
+           <BsEmojiDizzyFill style={{marginTop: '30px', marginBottom: '10px', color: '#8E8E8E'}} size={80}/>
+            <p className='content'>Sorry!</p>
+            <p className='content'>It seems invalid link</p>
+        </ContentLayout>
+        );
+    } else if (Result === 0) {
+        return (
+        <ContentLayout>
+          <BsFillEmojiLaughingFill style={{marginTop: '30px', marginBottom: '10px', color: '#40924D'}} size={80}/>
+            <p className='content'>Wow!</p>
+            <p className='content'>It`s regarded as genuine review!</p>
+            <p className='content'>Enjoy your web-surfing!</p>
+        </ContentLayout>
+        );
+    } else if (Result === 1) {
+        return (
+        <ContentLayout>
+          <BsEmojiFrownFill style={{marginTop: '30px', marginBottom: '10px', color: '#DB4848'}}  size={80}/>
+            <p className='content'>Oops!</p>
+            <p className='content'>This post is regarded as Ad!</p>
+            <p className='content'>Be careful while reading.</p>
+    
+        </ContentLayout>
+          );
+    } else if (Result === 2) {
+        return (
+        <ContentLayout>
+            <BsEmojiExpressionlessFill style={{marginTop: '30px', marginBottom: '10px', color: '#EDF128'}} size={80}/>
+            <p className='content'>Hmm...</p>
+            <p className='content'>It`s not Ad, but still, it`s suspicious.</p>
+            <p className='content'>Be careful while reading.</p>
+        </ContentLayout>
+         );
+    }
+  }
+  return (
+   <PopupLayout>
+      <Header>
+          <p className='title'>Blog Post Classifier</p>
+      </Header>
+      {loading? (
+        <ContentLayout>
+          <ClipLoader className='spinner' loading={loading} size={80}/>
+          <p className='content'>Analyzing...</p>
+        </ContentLayout>
+      ):
+        renderResult()
+      }
+   </PopupLayout>
+  );
+}
+
+export default App;
+
+const PopupLayout = styled.div`
+  width: 300px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  background: #D9D9D9;
+`
+const Header = styled.div`
+  width: 300px;
+  height: 60px;
+  background: #6F0395;
+  
+  .title{
+    color: #FFF;
+    font-family: Noto Sans;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-left: 15px;
+  }
+`
+const ContentLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .spinner{
+    color:#8E8E8E;
+    margin-top: 45px;
+  }
+  
+  .content{
+    color: #000;
+    font-family: Noto Sans;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    margin: 0.1rem;
+  }
+
+`
