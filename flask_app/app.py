@@ -11,7 +11,7 @@ model = ClassificationSystem()
 @app.route('/classify', methods=['POST'])
 def classify():
     data = request.get_json()
-    link = data['link']
+    link = data['link'] 
 
     if not (link.startswith("https://blog.naver.com") or link.startswith("https://m.blog.naver.com")):
         return {'result': 2}
