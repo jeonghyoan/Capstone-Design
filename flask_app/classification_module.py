@@ -6,12 +6,6 @@
 
 import urllib.request
 import urllib.parse
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import UnexpectedAlertPresentException
-from selenium.common.exceptions import WebDriverException
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup as bs
 import platform
 from PIL import ImageFont, ImageDraw, Image
@@ -25,7 +19,6 @@ import numpy as np
 import os
 import uuid
 import json
-import cv2
 import requests
 import sys
 
@@ -43,10 +36,10 @@ class ClassificationSystem:
         self.Setting()
         
     def Setting(self):
-        keyWordData = pd.read_csv('./키워드&업체명_최종.csv')
+        keyWordData = pd.read_csv('./flask_app/키워드&업체명_최종.csv')
         self.keyWordList = keyWordData['키워드'].tolist()
         self.excludeWordList = ["받지않고","100%내돈내산", "#체험단", "제공합", "체험할수", "제공하겠", "경험하니", "제공하기도", "뷰티블로거", "제공해드리며", "직접구매"]
-        self.savedModelPath = './BlogPostClassifier'
+        self.savedModelPath = './flask_app/BlogPostClassifier'
         self.reloadedModel = tf.saved_model.load(self.savedModelPath)
         
     def RemoveTrash(self, text):
