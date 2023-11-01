@@ -12,13 +12,13 @@ window.onload = function () {
         .then(data => {
             let result = data.result;
             if (result == -1) {
-                resultText.textContent = '페이지를 볼 수 없음';
+                resultText.textContent = '유효하지 않은 페이지';
             } else if (result == 0) {
                 resultText.textContent = '이 거친세상속 믿을만한리뷰ㅠ';
             } else if (result == 1) {
                 resultText.textContent = '광곤데 믿었니?ㅋ';
-            } else {
-				resultText.textContent = '네이버 블로그인지 확인 부탁드립니다';
+            } else if (result == 2) {
+				resultText.textContent = '좀 의심됨';
 			}
         })
         .catch(console.error);

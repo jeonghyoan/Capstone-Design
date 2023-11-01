@@ -101,6 +101,9 @@ class ClassificationSystem:
                     if textAnalysisResult == 1:
                         print('System : Ad detected in text analysis')
                         return 1
+                    elif textAnalysisResult == 2:
+                        print('System : Non ad but highly suspicious due to text analysis')
+                        return 2
                     else :
                         print('System : Ad did not detected at all')
                         return 0
@@ -354,7 +357,9 @@ class ClassificationSystem:
         print(self.savedModelPath)
         analysisResult = tf.sigmoid(self.reloadedModel(tf.constant([input])))
         print(analysisResult)
-        if analysisResult >= 0.5:
+        if analysisResult >= 0.66:
             return 1
+        elif ((analysisResult <= 0.66) and (analysisResult >= 0.33)):
+            return 2
         else:
             return 0
