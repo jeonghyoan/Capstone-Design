@@ -356,10 +356,11 @@ class ClassificationSystem:
         print('System : Text Analysis start')
         print(self.savedModelPath)
         analysisResult = tf.sigmoid(self.reloadedModel(tf.constant([input])))
+        analysisResult = analysisResult.numpy()[0]
         print(analysisResult)
         if analysisResult >= 0.66:
             return 1
         elif ((analysisResult <= 0.66) and (analysisResult >= 0.33)):
             return 2
-        else:
+        elif analysisResult < 0.33:
             return 0
