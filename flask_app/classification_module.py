@@ -32,32 +32,38 @@ class ClassificationSystem:
         self.keyWordList = keyWordList
         self.excludeWordList = excludeWordList
         self.lastNum = lastNum
-        # 생성시 한번 반드시 실행
+        #Initializing datas needed
         self.Setting()
         
+    #methods for setting required data
     def Setting(self):
-        keyWordData = pd.read_csv('./flask_app/키워드&업체명_최종.csv')
+        keyWordData = pd.read_csv('./키워드&업체명_최종.csv')
         self.keyWordList = keyWordData['키워드'].tolist()
         self.excludeWordList = ["받지않고","100%내돈내산", "#체험단", "제공합", "체험할수", "제공하겠", "경험하니", "제공하기도", "뷰티블로거", "제공해드리며", "직접구매"]
-        self.savedModelPath = './flask_app/BlogPostClassifier'
+        self.savedModelPath = './BlogPostClassifier'
         self.reloadedModel = tf.saved_model.load(self.savedModelPath)
         
+    #used for data preprocessing
     def RemoveTrash(self, text):
         result = re.sub(r'[,. ]', '', text)
         return result
     
+    
+    #used for put newly inserted element in the tail of array, and let existing elements move forward once
+    #as a result of this, existing first element(element of index 0) would be eliminated from the array
     def MoveForward(self, array, newElement):
         for i in range(1, len(array)):
             array[i - 1] = array[i]
         array[-1] = newElement
         
+    #used for 
     def MakeBackWhite(self, image_file):
         try:
             img = Image.open(image_file)
 
             width, height = img.size
 
-            # 투명한 부분을 흰색으로
+            #fill the transparent pixels with white pixels
             for x in range(width):
                 for y in range(height):
                     pixel = img.getpixel((x, y))
@@ -101,9 +107,6 @@ class ClassificationSystem:
                     if textAnalysisResult == 1:
                         print('System : Ad detected in text analysis')
                         return 1
-                    elif textAnalysisResult == 2:
-                        print('System : Non ad but highly suspicious due to text analysis')
-                        return 2
                     else :
                         print('System : Ad did not detected at all')
                         return 0
@@ -358,9 +361,7 @@ class ClassificationSystem:
         analysisResult = tf.sigmoid(self.reloadedModel(tf.constant([input])))
         analysisResult = analysisResult.numpy()[0]
         print(analysisResult)
-        if analysisResult >= 0.66:
+        if analysisResult >= 0.5:
             return 1
-        elif ((analysisResult <= 0.66) and (analysisResult >= 0.33)):
-            return 2
-        elif analysisResult < 0.33:
+        else:
             return 0

@@ -8,40 +8,17 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [Result, setResult] = useState("");
 
+  // Send the data of the current tab's link, and get result
   useEffect(()=>{
-    // const fetchData = async () => {
-    //   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    //   const tab = tabs[0];
-    //   let data = {link: tab.url }
-    //   try{
-    //   const response = await api.post('/classify', data);
-    //   let result = response.data.result;
-     
-    //       if (result == -1) {
-    //           setResultText('유효하지 않은 페이지');
-    //       } else if (result == 0) {
-    //           setResultText('이 거친세상속 믿을만한리뷰ㅠ');
-    //       } else if (result == 1) {
-    //           setResultText('광곤데 믿었니?ㅋ');
-    //       } else if (result == 2) {
-    //           setResultText('좀 의심됨');
-    //       }
-    //   }catch(error){
-    //     console.error("Error checking the email", error)
-    //   }
-
-    //  });
-      
-    // }
-
-    // fetchData();
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      var tab = tabs[0]; // 현재 활성화된 탭을 가져옵니다.
+      var tab = tabs[0]; //currently activated tab
+      //send request and data
       fetch('http://127.0.0.1:5000/classify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ link: tab.url }),
       })
+      //get result
       .then(response => response.json())
       .then(data => {
           let result = data.result;
@@ -54,6 +31,7 @@ function App() {
  
   },[])
 
+  //Rendering UI of chrome extension according to result got above
   const renderResult = () => {
     if (Result === -1) {
         return (
@@ -82,17 +60,11 @@ function App() {
     
         </ContentLayout>
           );
-    } else if (Result === 2) {
-        return (
-        <ContentLayout>
-            <BsEmojiExpressionlessFill style={{marginTop: '30px', marginBottom: '10px', color: '#EDF128'}} size={80}/>
-            <p className='content'>Hmm...</p>
-            <p className='content'>It`s not Ad, but still, it`s suspicious.</p>
-            <p className='content'>Be careful while reading.</p>
-        </ContentLayout>
-         );
     }
   }
+  /*
+  UI of Idle state
+  */
   return (
    <PopupLayout>
       <Header>
