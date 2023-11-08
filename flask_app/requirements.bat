@@ -1,0 +1,10 @@
+pip install flask
+pip install flask_cors
+pip install beautifulsoup4
+pip install pillow
+pip install matplotlib
+pip install pandas
+pip install numpy
+pip install requests
+pip install tensorflow
+pip install tensorflow_text
