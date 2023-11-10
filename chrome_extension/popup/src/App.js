@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import ClipLoader from 'react-spinners/ClipLoader';
-import {BsEmojiExpressionlessFill,BsFillEmojiLaughingFill, BsEmojiFrownFill, BsEmojiDizzyFill} from 'react-icons/bs'
+import {BsFillEmojiLaughingFill, BsEmojiFrownFill, BsEmojiDizzyFill} from 'react-icons/bs'
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -62,9 +62,8 @@ function App() {
           );
     }
   }
-  /*
-  UI of Idle state
-  */
+  
+  //Rendering UI of Idle state
   return (
    <PopupLayout>
       <Header>
