@@ -6,7 +6,7 @@ Beliview is a tool developed to help consumers obtain trustworthy information. W
 
 ---
 
-### ✨ Key Features
+### Key Features
 
 - **Deep Learning-Based Analysis**:  
   Utilizes deep learning models to assess the credibility of posts and differentiate between promotional and non-promotional content.
@@ -19,7 +19,7 @@ Beliview is a tool developed to help consumers obtain trustworthy information. W
 
 ---
 
-### 🛠️ How to Use
+### How to Use
 - Please refer to the [User Manual](https://github.com/jeonghyoan/Capstone-Design/blob/main/User%20Manual/User%20Manual.pdf) for detailed instructions.
 
 ---
