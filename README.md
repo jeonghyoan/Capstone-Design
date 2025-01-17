@@ -19,7 +19,7 @@ Beliview is a tool developed to help consumers obtain trustworthy information. W
 
 ---
 
-### 🛠️ How to Use<br><br>
+### 🛠️ How to Use
 - Please refer to the [User Manual](link) for detailed instructions.
 
 ---
