@@ -6,7 +6,14 @@ Beliview is a tool developed to help consumers obtain trustworthy information. W
 
 ---
 
-### Key Features
+## System Architecture
+
+<img src="https://github.com/user-attachments/assets/e9efb5b5-0037-4fa7-8602-35f85a40278c" width="900">
+
+
+---
+
+## Key Features
 
 - **Real-Time False Review Detection**:  
    Evaluates the credibility of reviews in real-time as users browse, providing instant feedback.
@@ -16,7 +23,7 @@ Beliview is a tool developed to help consumers obtain trustworthy information. W
 
 ---
 
-### How to Use
+## How to Use
 - Please refer to the [User Manual](https://github.com/jeonghyoan/Capstone-Design/blob/main/User%20Manual/User%20Manual.pdf) for detailed instructions.
 
 ---
