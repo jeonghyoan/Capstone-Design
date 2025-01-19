@@ -8,9 +8,6 @@ Beliview is a tool developed to help consumers obtain trustworthy information. W
 
 ### Key Features
 
-- **Deep Learning-Based Analysis**:  
-  Utilizes deep learning models to assess the credibility of posts and differentiate between promotional and non-promotional content.
-
 - **Real-Time False Review Detection**:  
    Evaluates the credibility of reviews in real-time as users browse, providing instant feedback.
 
