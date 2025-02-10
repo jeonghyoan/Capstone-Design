@@ -26,8 +26,6 @@ Beliview is a tool developed to help consumers obtain trustworthy information. W
 ## How to Use
 - Please refer to the [User Manual](https://github.com/jeonghyoan/Capstone-Design/blob/main/User%20Manual/User%20Manual.pdf) for detailed instructions.
 
----
-This service is designed to provide consumers with a better information environment. <br>
-We appreciate your interest and hope you find it useful! 🙌   
+
    
    
